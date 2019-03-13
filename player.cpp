@@ -37,8 +37,9 @@ SDL_Renderer* sdlRenderer;
 SDL_Texture* send;
 SDL_Surface* screen;
 uint32_t* pixbuff;
-uint8_t* audiobuff;
-float* carrier;
+uint8_t* audioread;
+int* audiobuff;
+int* carrier;
 int audiolength;
 
 void play ()
@@ -52,10 +53,13 @@ void play ()
 
        for (int i = 0; i < resy; i++)
        {
-          float val = audiobuff[(pos + i) % audiolength];
+          int val = audiobuff[(pos + i) % audiolength];
           for (int j = 0; j < resx; j++)
 	  {
-             uint32_t rgb = SDL_MapRGB(screen->format, int(val*carrier[j]), int(val*carrier[j]), int(val*carrier[j]));
+             int modulated = carrier[j] * val;
+	     modulated >>= 7;
+	     modulated += 127;
+             uint32_t rgb = SDL_MapRGB(screen->format, modulated, modulated, modulated);
              ((uint32_t*)screen->pixels)[i * resx + j] = rgb;
 	  }
        }
@@ -121,18 +125,25 @@ int main(int argc, char *argv[])
   SDL_RenderClear(sdlRenderer);
   SDL_RenderPresent(sdlRenderer);
 
-  carrier = (float*)malloc(sizeof(float) * resx);
+  carrier = (int*)malloc(sizeof(int) * resx);
   for (int i = 0; i < resx; i++)
   {
-     carrier[i] = (sin(2*M_PI*fc/pixelclock*i) + 1) / 2;
+     carrier[i] = int(sin(2*M_PI*fc/pixelclock*i)*128.0);
+     if (carrier[i] > 127) carrier[i] = 127;
   }
   
   FILE* audio = fopen(filename, "rb");
   fseek(audio, 0, SEEK_END);
   audiolength = ftell(audio);
   fseek(audio, 0, SEEK_SET);
-  audiobuff = (uint8_t*)malloc(audiolength);
-  fread(audiobuff, audiolength, 1, audio);
+  audioread = (uint8_t*)malloc(audiolength);
+  audiobuff = (int*)malloc(sizeof(int) * audiolength);
+  fread(audioread, audiolength, 1, audio);
+
+  for (int i = 0; i < audiolength; i++)
+  {
+     audiobuff[i] = (int(audioread[i]) - 128)/2;
+  }
 
   play();
 
