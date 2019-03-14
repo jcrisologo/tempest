@@ -53,12 +53,12 @@ void play ()
 
        for (int i = 0; i < resy; i++)
        {
-          int val = audiobuff[(pos + i) % audiolength];
+          int val = audioread[(pos + i) % audiolength];
           for (int j = 0; j < resx; j++)
 	  {
              int modulated = carrier[j] * val;
-	     modulated >>= 7;
-	     modulated += 127;
+	     modulated >>= 9;
+	     modulated += 128;
              uint32_t rgb = SDL_MapRGB(screen->format, modulated, modulated, modulated);
              ((uint32_t*)screen->pixels)[i * resx + j] = rgb;
 	  }
@@ -128,8 +128,7 @@ int main(int argc, char *argv[])
   carrier = (int*)malloc(sizeof(int) * resx);
   for (int i = 0; i < resx; i++)
   {
-     carrier[i] = int(sin(2*M_PI*fc/pixelclock*i)*128.0);
-     if (carrier[i] > 127) carrier[i] = 127;
+     carrier[i] = int(sin(2*M_PI*fc/pixelclock*i)*256.0);
   }
   
   FILE* audio = fopen(filename, "rb");
@@ -142,7 +141,7 @@ int main(int argc, char *argv[])
 
   for (int i = 0; i < audiolength; i++)
   {
-     audiobuff[i] = (int(audioread[i]) - 128)/2;
+     audiobuff[i] = (int(audioread[i]) - 128);
   }
 
   play();
