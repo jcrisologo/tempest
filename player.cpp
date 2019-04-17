@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <SDL.h>
 #include <string.h>
+#include "rrcos.h"
 
 double fc;
 int resx;
@@ -42,19 +43,24 @@ int* audiobuff;
 unsigned int* carrier;
 int audiolength;
 uint32_t* mod_lut[256];
+int* rrcos;
+size_t pulse_len;
 
 void play ()
 {
   int pos=0;
+  unsigned int ticksCurr;
+  unsigned int ticksLast;
   while (1) {
     SDL_Event event;
-    while(SDL_PollEvent(&event)) if (event.type == SDL_MOUSEBUTTONDOWN) exit(0);
+    while(SDL_PollEvent(&event)) if (event.type == SDL_MOUSEBUTTONDOWN) {printf("%d\n", ticksCurr - ticksLast); exit(0);}
+    ticksLast = ticksCurr;
 
-       if (pos >= audiolength) pos -= audiolength;
+       if (pos >= pulse_len) pos -= pulse_len;
 
        for (int i = 0; i < resy; i++)
        {
-          int val = audiobuff[(pos + i) % audiolength];
+          int val = rrcos[(pos + i) % pulse_len];
           for (int j = 0; j < resx; j++)
 	  {
              ((uint32_t*)screen->pixels)[i * resx + j] = mod_lut[val][j];
@@ -65,7 +71,10 @@ void play ()
        SDL_RenderCopy(sdlRenderer, send, NULL, NULL);
        SDL_RenderPresent(sdlRenderer);
        pos += verticalspan;
+ticksCurr = SDL_GetTicks();
+SDL_Delay(1000);
   };
+
 };
 
 void usage()
@@ -145,6 +154,17 @@ int main(int argc, char *argv[])
   {
      audiobuff[i] = audioread[i]/2;
   }
+
+  pulse_len = 2*verticalspan*2+1;
+  float* rrcos_float = (float*)malloc(pulse_len * sizeof(float));
+  rrcos = (int*)malloc(pulse_len * sizeof(int));
+  liquid_firdes_rrcos(verticalspan, 2, 0.5, 0, rrcos_float);
+
+  for (int i = 0; i < pulse_len; i++)
+  {
+    rrcos[i] = (int)(rrcos_float[i] / 1.2 * 127) + 127;
+  }
+  free(rrcos_float);
 
   play();
 
