@@ -11,15 +11,15 @@ _OBJ = player.o rrcos.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 
-$(ODIR)/%.o: %.cpp $(DEPS)
-	$(CXX) -c -o $@ $< $(CFLAGS)
+$(ODIR)/%.o: %.c $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
 
 .PHONY: clean all
 
 all: tempest_transmission
 
 tempest_transmission: $(OBJ)
-	$(CXX) -o $@ $^ $(CFLAGS) $(LIBS)
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 clean:
 	rm -f $(ODIR)/*.o 
