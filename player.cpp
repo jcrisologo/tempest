@@ -31,6 +31,7 @@ int resx;
 int resy;
 int horizontalspan;
 int verticalspan;
+int cyclecount;
 double pixelclock;
 
 SDL_Window* sdlWindow;
@@ -40,9 +41,9 @@ SDL_Surface* screen;
 uint32_t* pixbuff;
 uint8_t* audioread;
 int* audiobuff;
-unsigned int* carrier;
+float* carrier;
 int audiolength;
-uint32_t* mod_lut[256];
+SDL_Texture* mod_lut[256];
 int* rrcos;
 size_t pulse_len;
 
@@ -51,6 +52,12 @@ void play ()
   int pos=0;
   unsigned int ticksCurr;
   unsigned int ticksLast;
+  SDL_Rect dstrect;
+  dstrect.x = 0;
+  dstrect.y = 0;
+  dstrect.w = pixelclock / fc * cyclecount;
+  dstrect.h = 1;
+
   while (1) {
     SDL_Event event;
     while(SDL_PollEvent(&event)) if (event.type == SDL_MOUSEBUTTONDOWN) {printf("%d\n", ticksCurr - ticksLast); exit(0);}
@@ -61,18 +68,18 @@ void play ()
        for (int i = 0; i < resy; i++)
        {
           int val = rrcos[(pos + i) % pulse_len];
-          for (int j = 0; j < resx; j++)
+          dstrect.y = i;
+          for (int j = 0; j < resx * 2; j+=pixelclock/fc * cyclecount)
 	  {
-             ((uint32_t*)screen->pixels)[i * resx + j] = mod_lut[val][j];
+             dstrect.x = j;
+             SDL_RenderCopy(sdlRenderer, mod_lut[val], NULL, &dstrect);
 	  }
        }
        
-       SDL_UpdateTexture(send, NULL, screen->pixels, resx*sizeof(uint32_t));
-       SDL_RenderCopy(sdlRenderer, send, NULL, NULL);
        SDL_RenderPresent(sdlRenderer);
        pos += verticalspan;
 ticksCurr = SDL_GetTicks();
-SDL_Delay(1000);
+//SDL_Delay(5000);
   };
 
 };
@@ -91,6 +98,7 @@ int main(int argc, char *argv[])
   horizontalspan=1400;
   verticalspan=1600;
   pixelclock=105.0 * 1e6;
+  cyclecount = 1;
   char *filename;
 
   atexit(SDL_Quit);
@@ -104,14 +112,15 @@ int main(int argc, char *argv[])
 	 "if you do not read it, you will NOT know what to do\n"
 	 );
 
-  if (argc!=8) usage();
+  if (argc!=9) usage();
   pixelclock=atof(argv[1]);
-  resx=atol(argv[2]);
-  resy=atol(argv[3]);
-  horizontalspan=atol(argv[4]);
-  verticalspan=atol(argv[5]);
-  fc=atof(argv[6]);
-  filename=argv[7];
+  cyclecount=atol(argv[2]);
+  resx=atol(argv[3]);
+  resy=atol(argv[4]);
+  horizontalspan=atol(argv[5]);
+  verticalspan=atol(argv[6]);
+  fc=atof(argv[7]);
+  filename=argv[8];
 
   printf("\n"
 	 "Pixel Clock %.0f Hz\n"
@@ -131,16 +140,27 @@ int main(int argc, char *argv[])
   SDL_RenderClear(sdlRenderer);
   SDL_RenderPresent(sdlRenderer);
 
-  carrier = (unsigned int*)malloc(sizeof(int) * resx * 256);
+  size_t ppc = pixelclock / fc * cyclecount;
+  carrier = (float*)malloc(sizeof(float) * ppc);
+  for (int i = 0; i < ppc; i++)
+  {
+    carrier[i] = cos(2.0*M_PI*fc/pixelclock*i);
+  }
+
   for (int j = 0; j < 255; j++)
   {
-    mod_lut[j] = carrier + j*resx;
-  for (int i = 0; i < resx; i++)
-  {
-     unsigned int val = (unsigned int)(127 + cos(2.0*M_PI*fc/pixelclock*i)*(j - 127));
-     mod_lut[j][i] = SDL_MapRGB(screen->format, val, val, val);
+    unsigned int mod_cycle[ppc];
+
+    mod_lut[j] = SDL_CreateTexture(sdlRenderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, ppc, 1);
+    for (int i = 0; i < ppc; i++)
+    {
+      unsigned int val = (unsigned int)(127 + carrier[i]*(j - 127));
+      mod_cycle[i] = SDL_MapRGB(screen->format, val, val, val);
+    }
+    SDL_UpdateTexture(mod_lut[j], NULL, &mod_cycle, ppc*sizeof(int));
   }
-  }
+
+  free(carrier);
   
   FILE* audio = fopen(filename, "rb");
   fseek(audio, 0, SEEK_END);
