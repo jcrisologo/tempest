@@ -7,7 +7,7 @@ LDIR =../lib
 
 LIBS=-lm -lSDL2 -L/usr/lib/i386-linux-gnu
 
-_OBJ = player.o 
+_OBJ = player.o rrcos.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 
