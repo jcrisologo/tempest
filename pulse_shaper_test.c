@@ -12,10 +12,25 @@ int main()
    ps_params.sps = 6;
    ps_params.delay = 2;
    ps_params.beta = 0.5;
+   ps_params.gain = 110;
 
    pulse_shaper_init(&ps, ps_params);
+   pulse_shaper_advance(&ps, 1, output);
+   for (int i = 0; i < 24; i++)
+   {
+      pulse_shaper_advance(&ps, 0, output);
 
-   for (int i = 0; i < 12; i++)
+      for (int j = 0; j < 6; j++)
+      {
+         printf("%d ", output[j]);
+      }
+      printf("\n");
+   }
+	
+
+   for (int k = 0; k < 4; k++)
+   {
+   for (int i = 0; i < 4; i++)
    {
       pulse_shaper_advance(&ps, 1, output);
 
@@ -26,7 +41,7 @@ int main()
       printf("\n");
    }
 
-   for (int i = 0; i < 6; i++)
+   for (int i = 0; i < 4; i++)
    {
       pulse_shaper_advance(&ps, -1, output);
 
@@ -36,10 +51,11 @@ int main()
       }
       printf("\n");
    }
+   }
 
-   for (int i = 0; i < 12; i++)
+   for (int i = 0; i < 24; i++)
    {
-      pulse_shaper_advance(&ps, i%2?1:-1, output);
+      pulse_shaper_advance(&ps, 1, output);
 
       for (int j = 0; j < 6; j++)
       {

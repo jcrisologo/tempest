@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <SDL.h>
 #include <string.h>
-#include "rrcos.h"
+#include "pulse_shaper.h"
 
 double fc;
 int resx;
@@ -50,36 +50,67 @@ size_t pulse_len;
 void play ()
 {
   int pos=0;
-  unsigned int ticksCurr;
-  unsigned int ticksLast;
+  unsigned int ticksCurr = SDL_GetTicks();
+  unsigned int ticksLast = ticksCurr;
+  unsigned int missed = 0;
   SDL_Rect dstrect;
   dstrect.x = 0;
   dstrect.y = 0;
   dstrect.w = pixelclock / fc * cyclecount;
   dstrect.h = 1;
 
+  pulse_shaper ps;
+  pulse_shaper_params ps_params;
+
+  ps_params.sps = verticalspan;
+  ps_params.delay = 2;
+  ps_params.beta = 0.5;
+  ps_params.gain = 100;
+
+  pulse_shaper_init(&ps, ps_params);
+  int8_t buff[verticalspan];
+
+  unsigned int data[] = {-1, -1, -1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1};
+//  unsigned int data[] = {-1, -1, -1, 1,
+//	                 -1, -1, 1, -1,
+//			 -1, -1, 1, 1,
+//			 -1, 1, -1, -1,
+//			 -1, 1, -1, 1,
+//			 -1, 1, 1, -1,
+//			 -1, 1, 1, 1,
+//			 1, -1, -1, -1,
+//			 1, -1, -1, 1,
+//			 1, -1, 1, -1,
+//			 1, -1, 1, 1,
+//			 1, 1, -1, -1,
+//			 1, 1, -1, 1,
+//			 1, 1, 1, -1,
+//			 1, 1, 1, 1,};
+
+  size_t data_len = sizeof(data)/sizeof(data[0]);
+
   while (1) {
     SDL_Event event;
-    while(SDL_PollEvent(&event)) if (event.type == SDL_MOUSEBUTTONDOWN) {printf("%d\n", ticksCurr - ticksLast); exit(0);}
+    while(SDL_PollEvent(&event)) if (event.type == SDL_MOUSEBUTTONDOWN) {printf("%d\n", missed); exit(0);}
     ticksLast = ticksCurr;
 
-       if (pos >= pulse_len) pos -= pulse_len;
+       pulse_shaper_advance(&ps, data[pos++], buff);
 
        for (int i = 0; i < resy; i++)
        {
-          int val = rrcos[(pos + i) % pulse_len];
           dstrect.y = i;
           for (int j = 0; j < resx * 2; j+=pixelclock/fc * cyclecount)
 	  {
              dstrect.x = j;
-             SDL_RenderCopy(sdlRenderer, mod_lut[val], NULL, &dstrect);
+             SDL_RenderCopy(sdlRenderer, mod_lut[buff[i] + 127], NULL, &dstrect);
 	  }
        }
        
        SDL_RenderPresent(sdlRenderer);
-       pos += verticalspan;
+       pos %= data_len;
 ticksCurr = SDL_GetTicks();
-//SDL_Delay(5000);
+if (ticksCurr - ticksLast > 20) missed++;
+//SDL_Delay(500);
   };
 
 };
@@ -147,7 +178,7 @@ int main(int argc, char *argv[])
     carrier[i] = cos(2.0*M_PI*fc/pixelclock*i);
   }
 
-  for (int j = 0; j < 255; j++)
+  for (int j = 0; j < 256; j++)
   {
     unsigned int mod_cycle[ppc];
 
@@ -174,17 +205,6 @@ int main(int argc, char *argv[])
   {
      audiobuff[i] = audioread[i]/2;
   }
-
-  pulse_len = 2*verticalspan*2+1;
-  float* rrcos_float = (float*)malloc(pulse_len * sizeof(float));
-  rrcos = (int*)malloc(pulse_len * sizeof(int));
-  liquid_firdes_rrcos(verticalspan, 2, 0.5, 0, rrcos_float);
-
-  for (int i = 0; i < pulse_len; i++)
-  {
-    rrcos[i] = (int)(rrcos_float[i] / 1.2 * 127) + 127;
-  }
-  free(rrcos_float);
 
   play();
 

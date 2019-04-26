@@ -8,13 +8,14 @@ typedef struct pulse_shaper_params
    unsigned int sps;
    unsigned int delay;
    float beta;
+   float gain;
 } pulse_shaper_params;
 
 typedef struct pulse_shaper
 {
    pulse_shaper_params params;
-   uint8_t* buffer;
-   uint8_t* pulse;
+   int8_t* buffer;
+   int8_t* pulse;
    unsigned int buffer_pos;
 } pulse_shaper;
 
