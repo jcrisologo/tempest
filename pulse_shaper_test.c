@@ -12,7 +12,7 @@ int main()
    ps_params.sps = 6;
    ps_params.delay = 2;
    ps_params.beta = 0.5;
-   ps_params.gain = 110;
+   ps_params.gain = 127;
 
    pulse_shaper_init(&ps, ps_params);
    pulse_shaper_advance(&ps, 1, output);

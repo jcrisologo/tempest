@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include <stdlib.h>
-#include "rrcos.h"
+#include <liquid/liquid.h>
 #include "pulse_shaper.h"
 
 float max(float* f_arr, size_t size)

@@ -5,9 +5,9 @@ CFLAGS=-I$(IDIR) -I/usr/include/SDL2 -O2
 ODIR=obj
 LDIR =../lib
 
-LIBS=-lm -lSDL2 -L/usr/lib/i386-linux-gnu
+LIBS=-lm -lSDL2 -lliquid -L/usr/lib/i386-linux-gnu
 
-_OBJ = rrcos.o pulse_shaper.o
+_OBJ = pulse_shaper.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 TARGETS = tempest_transmission pulse_shaper_test
