@@ -1,6 +1,6 @@
 IDIR =./include
 CC=gcc
-CFLAGS=-I$(IDIR) -I/usr/include/SDL2 -O2
+CFLAGS=-I$(IDIR) -O2
 
 ODIR=obj
 LDIR =../lib

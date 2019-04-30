@@ -3,30 +3,25 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <SDL.h>
+#include <SDL2/SDL.h>
 #include <string.h>
 #include <pulse_shaper.h>
+#include <mixer.h>
 
 double fc;
 int resx;
 int resy;
 int horizontalspan;
 int verticalspan;
-int cyclecount;
 double pixelclock;
 
 SDL_Window* sdlWindow;
 SDL_Renderer* sdlRenderer;
 SDL_Texture* send;
 SDL_Surface* screen;
-uint32_t* pixbuff;
 uint8_t* audioread;
 int* audiobuff;
-float* carrier;
 int audiolength;
-SDL_Texture* mod_lut[256];
-int* rrcos;
-size_t pulse_len;
 
 void play ()
 {
@@ -34,11 +29,6 @@ void play ()
   unsigned int ticksCurr = SDL_GetTicks();
   unsigned int ticksLast = ticksCurr;
   unsigned int missed = 0;
-  SDL_Rect dstrect;
-  dstrect.x = 0;
-  dstrect.y = 0;
-  dstrect.w = pixelclock / fc * cyclecount;
-  dstrect.h = 1;
 
   pulse_shaper ps;
   pulse_shaper_params ps_params;
@@ -47,9 +37,17 @@ void play ()
   ps_params.delay = 2;
   ps_params.beta = 0.5;
   ps_params.gain = 84;
-
   pulse_shaper_init(&ps, ps_params);
+
+  mixer m;
+  mixer_params m_params;
+  m_params.fc = fc;
+  m_params.fs = pixelclock;
+  m_params.upsample = horizontalspan;
+  mixer_init(&m, m_params);
+
   int8_t buff[verticalspan];
+  int8_t horbuff[horizontalspan];
 
 //  unsigned int data[] = {-1, -1, -1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1};
   unsigned int data[] = {-1, -1, -1, 1,
@@ -79,19 +77,21 @@ void play ()
 
        for (int i = 0; i < resy; i++)
        {
-          dstrect.y = i;
-          for (int j = 0; j < resx * 2; j+=pixelclock/fc * cyclecount)
-	  {
-             dstrect.x = j;
-             SDL_RenderCopy(sdlRenderer, mod_lut[buff[i] + 127], NULL, &dstrect);
-	  }
+          mixer_mix(&m, buff[i], 0, horbuff, NULL);
+
+          for (int j = 0; j < resx; j++)
+          {
+            ((uint32_t*)screen->pixels)[i * resx + j] = SDL_MapRGBA(screen->format, horbuff[j] + 128, horbuff[j] + 128, horbuff[j] + 128, 128);
+          }
        }
-       
+
+       SDL_UpdateTexture(send, NULL, screen->pixels, screen->pitch);
+       SDL_RenderCopy(sdlRenderer, send, NULL, NULL);
        SDL_RenderPresent(sdlRenderer);
        pos %= data_len;
 ticksCurr = SDL_GetTicks();
 if (ticksCurr - ticksLast > 20) missed++;
-SDL_Delay(300);
+SDL_Delay(500);
   };
 
 };
@@ -110,20 +110,18 @@ int main(int argc, char *argv[])
   horizontalspan=1400;
   verticalspan=1600;
   pixelclock=105.0 * 1e6;
-  cyclecount = 1;
   char *filename;
 
   atexit(SDL_Quit);
 
-  if (argc!=9) usage();
+  if (argc!=8) usage();
   pixelclock=atof(argv[1]);
-  cyclecount=atol(argv[2]);
-  resx=atol(argv[3]);
-  resy=atol(argv[4]);
-  horizontalspan=atol(argv[5]);
-  verticalspan=atol(argv[6]);
-  fc=atof(argv[7]);
-  filename=argv[8];
+  resx=atol(argv[2]);
+  resy=atol(argv[3]);
+  horizontalspan=atol(argv[4]);
+  verticalspan=atol(argv[5]);
+  fc=atof(argv[6]);
+  filename=argv[7];
 
   printf("\n"
 	 "Pixel Clock %.0f Hz\n"
@@ -143,28 +141,6 @@ int main(int argc, char *argv[])
   SDL_RenderClear(sdlRenderer);
   SDL_RenderPresent(sdlRenderer);
 
-  size_t ppc = pixelclock / fc * cyclecount;
-  carrier = (float*)malloc(sizeof(float) * ppc);
-  for (int i = 0; i < ppc; i++)
-  {
-    carrier[i] = cos(2.0*M_PI*fc/pixelclock*i);
-  }
-
-  for (int j = 0; j < 256; j++)
-  {
-    unsigned int mod_cycle[ppc];
-
-    mod_lut[j] = SDL_CreateTexture(sdlRenderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, ppc, 1);
-    for (int i = 0; i < ppc; i++)
-    {
-      unsigned int val = (unsigned int)(127 + carrier[i]*(j - 127));
-      mod_cycle[i] = SDL_MapRGB(screen->format, val, val, val);
-    }
-    SDL_UpdateTexture(mod_lut[j], NULL, &mod_cycle, ppc*sizeof(int));
-  }
-
-  free(carrier);
-  
   FILE* audio = fopen(filename, "rb");
   fseek(audio, 0, SEEK_END);
   audiolength = ftell(audio);

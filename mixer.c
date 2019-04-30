@@ -41,11 +41,11 @@ void mixer_mix(mixer* m, int i_samp, int q_samp, int8_t* buffer_out, int* sample
 {
    int idx_offset = (_MIXER_LUT_SIZE + 0) / 2;
    int flag;
-   *samples_clipped = 0;
+   if (samples_clipped) *samples_clipped = 0;
 
    for (int i = 0; i < m->params.upsample; i++)
    {
       buffer_out[i] = ssadd8(m->cos_lut[i_samp + idx_offset][i], m->sin_lut[q_samp + idx_offset][i], &flag);
-      if (flag) (*samples_clipped)++;
+      if (samples_clipped && flag) (*samples_clipped)++;
    }
 }
