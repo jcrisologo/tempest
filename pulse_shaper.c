@@ -1,43 +1,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <liquid/liquid.h>
-#include "pulse_shaper.h"
-
-float max(float* f_arr, size_t size)
-{
-   float max = f_arr[0];
-
-   for (int i = 1; i < size; i++)
-   {
-      max = max > f_arr[i] ? max : f_arr[i];
-   }
-
-   return max;
-}
-
-// 8-bit signed saturating addition
-// This function will turn arithmetic overflow into clipping
-// Ideally, tune the gain parameter so clipping doesn't occur
-// Branch prediction should kick in if gain is tuned right
-int8_t ssadd8(int8_t a, int8_t b, int* flag)
-{
-   if (flag) *flag = 0;
-
-   if (a > 0)
-   {
-      if (b > INT8_MAX - a)
-      {
-         if (flag) *flag = 1;
-         return INT8_MAX;
-      }
-   }
-   else if (b < INT8_MIN - a)
-   {
-      if (flag) *flag = 1;
-      return INT8_MIN;
-   }
-   return a + b;
-}
+#include <util.h>
+#include <pulse_shaper.h>
 
 void pulse_shaper_init(pulse_shaper* shaper, pulse_shaper_params params)
 {

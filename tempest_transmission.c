@@ -1,22 +1,3 @@
-/*
-  tempest for eliza code
-  Copyright (C) 2001  Erik Thiele
-
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or
-  (at your option) any later version.
-  
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-  
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
-
 #include <math.h>
 #include <stdlib.h>
 #include <sys/time.h>
@@ -24,7 +5,7 @@
 #include <stdio.h>
 #include <SDL.h>
 #include <string.h>
-#include "pulse_shaper.h"
+#include <pulse_shaper.h>
 
 double fc;
 int resx;
@@ -65,27 +46,27 @@ void play ()
   ps_params.sps = verticalspan;
   ps_params.delay = 2;
   ps_params.beta = 0.5;
-  ps_params.gain = 100;
+  ps_params.gain = 84;
 
   pulse_shaper_init(&ps, ps_params);
   int8_t buff[verticalspan];
 
-  unsigned int data[] = {-1, -1, -1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1};
-//  unsigned int data[] = {-1, -1, -1, 1,
-//	                 -1, -1, 1, -1,
-//			 -1, -1, 1, 1,
-//			 -1, 1, -1, -1,
-//			 -1, 1, -1, 1,
-//			 -1, 1, 1, -1,
-//			 -1, 1, 1, 1,
-//			 1, -1, -1, -1,
-//			 1, -1, -1, 1,
-//			 1, -1, 1, -1,
-//			 1, -1, 1, 1,
-//			 1, 1, -1, -1,
-//			 1, 1, -1, 1,
-//			 1, 1, 1, -1,
-//			 1, 1, 1, 1,};
+//  unsigned int data[] = {-1, -1, -1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1};
+  unsigned int data[] = {-1, -1, -1, 1,
+	                 -1, -1, 1, -1,
+			 -1, -1, 1, 1,
+			 -1, 1, -1, -1,
+			 -1, 1, -1, 1,
+			 -1, 1, 1, -1,
+			 -1, 1, 1, 1,
+			 1, -1, -1, -1,
+			 1, -1, -1, 1,
+			 1, -1, 1, -1,
+			 1, -1, 1, 1,
+			 1, 1, -1, -1,
+			 1, 1, -1, 1,
+			 1, 1, 1, -1,
+			 1, 1, 1, 1,};
 
   size_t data_len = sizeof(data)/sizeof(data[0]);
 
@@ -110,7 +91,7 @@ void play ()
        pos %= data_len;
 ticksCurr = SDL_GetTicks();
 if (ticksCurr - ticksLast > 20) missed++;
-//SDL_Delay(500);
+SDL_Delay(300);
   };
 
 };
@@ -133,15 +114,6 @@ int main(int argc, char *argv[])
   char *filename;
 
   atexit(SDL_Quit);
-
-  printf(
-	 "\n"
-	 "Tempest for Eliza - by erikyyy !\n"
-	 "--------------------------------\n"
-	 "\n"
-	 "Read the README file to understand what's happening\n"
-	 "if you do not read it, you will NOT know what to do\n"
-	 );
 
   if (argc!=9) usage();
   pixelclock=atof(argv[1]);

@@ -1,16 +1,16 @@
-IDIR =../include
+IDIR =./include
 CC=gcc
 CFLAGS=-I$(IDIR) -I/usr/include/SDL2 -O2
 
 ODIR=obj
 LDIR =../lib
 
-LIBS=-lm -lSDL2 -lliquid -L/usr/lib/i386-linux-gnu
+LIBS=-lm -lSDL2 -lliquid -lconfig -L/usr/lib/i386-linux-gnu
 
-_OBJ = pulse_shaper.o
+_OBJ = pulse_shaper.o config_reader.o mixer.o util.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
-TARGETS = tempest_transmission pulse_shaper_test
+TARGETS = tempest_transmission pulse_shaper_test mixer_test
 
 $(ODIR)/%.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
