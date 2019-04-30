@@ -77,21 +77,17 @@ void play ()
 
        for (int i = 0; i < resy; i++)
        {
-          mixer_mix(&m, buff[i], 0, horbuff, NULL);
-
-          for (int j = 0; j < resx; j++)
-          {
-            ((uint32_t*)screen->pixels)[i * resx + j] = SDL_MapRGBA(screen->format, horbuff[j] + 128, horbuff[j] + 128, horbuff[j] + 128, 128);
-          }
+          mixer_mix(&m, buff[i], 50, (uint8_t*)&screen->pixels[i*resx], NULL);
        }
 
-       SDL_UpdateTexture(send, NULL, screen->pixels, screen->pitch);
+       send = SDL_CreateTextureFromSurface(sdlRenderer, screen);
        SDL_RenderCopy(sdlRenderer, send, NULL, NULL);
        SDL_RenderPresent(sdlRenderer);
+       SDL_DestroyTexture(send);
        pos %= data_len;
 ticksCurr = SDL_GetTicks();
 if (ticksCurr - ticksLast > 20) missed++;
-SDL_Delay(500);
+//SDL_Delay(300);
   };
 
 };
@@ -121,8 +117,7 @@ int main(int argc, char *argv[])
   horizontalspan=atol(argv[4]);
   verticalspan=atol(argv[5]);
   fc=atof(argv[6]);
-  filename=argv[7];
-
+  filename=argv[7]; 
   printf("\n"
 	 "Pixel Clock %.0f Hz\n"
 	 "X Resolution %d Pixels\n"
@@ -135,8 +130,21 @@ int main(int argc, char *argv[])
 
   sdlWindow = SDL_CreateWindow("waha", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 0, 0, SDL_WINDOW_FULLSCREEN_DESKTOP);
   sdlRenderer = SDL_CreateRenderer(sdlWindow, -1, SDL_RENDERER_PRESENTVSYNC);
-  screen = SDL_CreateRGBSurface(0, resx, resy, 32, 0, 0, 0, 0);
-  send = SDL_CreateTexture(sdlRenderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, resx, resy);
+  screen = SDL_CreateRGBSurface(0, resx, resy, 8, 0, 0, 0, 0);
+
+  if (screen ==NULL)
+  {
+     printf("%s", SDL_GetError());
+     exit(1);
+  }
+
+  SDL_Color colors[256];
+  for (int i = 0; i < 256; i++)
+  {
+     colors[i].r = colors[i].g = colors[i].b = (uint8_t)i;
+  }
+
+  SDL_SetPaletteColors(screen->format->palette, colors, 0, 256);
   SDL_SetRenderDrawColor(sdlRenderer, 0, 0, 0, 255);
   SDL_RenderClear(sdlRenderer);
   SDL_RenderPresent(sdlRenderer);
