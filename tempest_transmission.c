@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
   mm_params.resy = resy;
   mm_params.spanx = horizontalspan;
   mm_params.spany = verticalspan;
-  mm_params.mod_mode = MOD_MODE_BPSK;
+  mm_params.mod_mode = MOD_MODE_QPSK;
   mm_params.fc = fc;
   mm_params.fs = pixelclock;
 
@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
     while(SDL_PollEvent(&event)) 
        if (event.type == SDL_MOUSEBUTTONDOWN) 
           exit(0);
-     monitor_modulator_transmit(&mm, i%2);
+     monitor_modulator_transmit(&mm, i%4);
      SDL_Delay(250);
   }
 

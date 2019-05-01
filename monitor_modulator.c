@@ -40,10 +40,12 @@ void monitor_modulator_init(
    mix_params.fs = mod_params.fs;
    mix_params.upsample = mod_params.spanx;
 
-   mm->pulse_shaper = malloc(sizeof(pulse_shaper_t));
+   mm->pulse_shaper_i = malloc(sizeof(pulse_shaper_t));
+   mm->pulse_shaper_q = malloc(sizeof(pulse_shaper_t));
    mm->mixer = malloc(sizeof(mixer_t));
 
-   pulse_shaper_init(mm->pulse_shaper, ps_params);
+   pulse_shaper_init(mm->pulse_shaper_i, ps_params);
+   pulse_shaper_init(mm->pulse_shaper_q, ps_params);
    mixer_init(mm->mixer, mix_params);
    monitor_modulator_sdl_init(mm);
 
@@ -54,17 +56,33 @@ void monitor_modulator_init(
    }
 }
 
+void monitor_modulator_display(monitor_modulator_t* mm)
+{
+   mm->texture = SDL_CreateTextureFromSurface(mm->renderer, mm->surface);
+   SDL_RenderCopy(mm->renderer, mm->texture, NULL, NULL);
+   SDL_RenderPresent(mm->renderer);
+   SDL_DestroyTexture(mm->texture);
+}
+
 int monitor_modulator_bpsk_map(int data)
 {
    if (data) return 1;
    else return -1;
 }
 
+void monitor_modulator_qpsk_map(int* data, int* samp)
+{
+   if (data[0]) samp[0] = 1;
+   else samp[0] = -1;
+   if (data[1]) samp[1] = 1;
+   else samp[1] = -1;
+}
+
 void monitor_modulator_bpsk_draw(monitor_modulator_t* mm, int sym)
 {
    int8_t pulse_buffer[mm->params.spany];
 
-   pulse_shaper_advance(mm->pulse_shaper, sym, pulse_buffer);
+   pulse_shaper_advance(mm->pulse_shaper_i, sym, pulse_buffer);
    
    for (int i = 0; i < mm->params.resy; i++)
    {
@@ -76,10 +94,28 @@ void monitor_modulator_bpsk_draw(monitor_modulator_t* mm, int sym)
       }
    }
 
-   mm->texture = SDL_CreateTextureFromSurface(mm->renderer, mm->surface);
-   SDL_RenderCopy(mm->renderer, mm->texture, NULL, NULL);
-   SDL_RenderPresent(mm->renderer);
-   SDL_DestroyTexture(mm->texture);
+   monitor_modulator_display(mm);
+}
+
+void monitor_modulator_qpsk_draw(monitor_modulator_t* mm, int isym, int qsym)
+{
+   int8_t pulse_buffer_i[mm->params.spany];
+   int8_t pulse_buffer_q[mm->params.spany];
+
+   pulse_shaper_advance(mm->pulse_shaper_i, isym, pulse_buffer_i);
+   pulse_shaper_advance(mm->pulse_shaper_q, qsym, pulse_buffer_q);
+   
+   for (int i = 0; i < mm->params.resy; i++)
+   {
+      mixer_mix(mm->mixer, pulse_buffer_i[i], pulse_buffer_q[i], &((int8_t*)mm->surface->pixels)[i * mm->params.resx], NULL);
+
+      for (int j = 0; j < mm->params.resx; j++)
+      {
+         ((uint8_t*)mm->surface->pixels)[i * mm->params.resx + j] += 128;
+      }
+   }
+
+   monitor_modulator_display(mm);
 }
 
 void monitor_modulator_transmit(monitor_modulator_t* mm, int data)
@@ -95,6 +131,14 @@ void monitor_modulator_transmit(monitor_modulator_t* mm, int data)
          sym = monitor_modulator_bpsk_map(data);
          monitor_modulator_bpsk_draw(mm, sym);
          break;
-      case MOD_MODE_QPSK: break;
+      case MOD_MODE_QPSK: 
+         mm->data_buffer[mm->data_buffer_count++] = data;
+         if (mm->data_buffer_count == 2)
+         {
+            monitor_modulator_qpsk_map(mm->data_buffer, qpsk_sym);
+            monitor_modulator_qpsk_draw(mm, qpsk_sym[0], qpsk_sym[1]);
+            mm->data_buffer_count = 0;
+         }
+         break;
    }
 }
