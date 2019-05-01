@@ -155,13 +155,32 @@ int main(int argc, char *argv[])
   monitor_modulator_init(&mm, mm_params);
 
     SDL_Event event;
+  unsigned int data[] = {0, 0, 0, 0,
+	                 0, 0, 0, 1,
+	                 0, 0, 1, 0,
+			 0, 0, 1, 1,
+			 0, 1, 0, 0,
+			 0, 1, 0, 1,
+			 0, 1, 1, 0,
+			 0, 1, 1, 1,
+			 1, 0, 0, 0,
+			 1, 0, 0, 1,
+			 1, 0, 1, 0,
+			 1, 0, 1, 1,
+			 1, 1, 0, 0,
+			 1, 1, 0, 1,
+			 1, 1, 1, 0,
+			 1, 1, 1, 1,};
+  int pos = 0;
+    while(1)
   for (int i = 0; i < 600; i++)
   {
     while(SDL_PollEvent(&event)) 
        if (event.type == SDL_MOUSEBUTTONDOWN) 
           exit(0);
-     monitor_modulator_transmit(&mm, i%4);
-     SDL_Delay(250);
+     monitor_modulator_transmit(&mm, data[pos++]);
+     pos %= 64;
+     //SDL_Delay(150);
   }
 
   return 0;
