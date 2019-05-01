@@ -129,27 +129,6 @@ int main(int argc, char *argv[])
 	 "\n\n",
 	 pixelclock,resx,resy,horizontalspan,verticalspan,fc);
 
-//  sdlWindow = SDL_CreateWindow("waha", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 0, 0, SDL_WINDOW_FULLSCREEN_DESKTOP);
-//  sdlRenderer = SDL_CreateRenderer(sdlWindow, -1, SDL_RENDERER_PRESENTVSYNC);
-  screen = SDL_CreateRGBSurface(0, resx, resy, 8, 0, 0, 0, 0);
-
-  if (screen ==NULL)
-  {
-     printf("%s", SDL_GetError());
-     exit(1);
-  }
-
-  SDL_Color colors[256];
-  for (int i = 0; i < 256; i++)
-  {
-     colors[i].r = colors[i].g = colors[i].b = (uint8_t)i;
-  }
-
-  SDL_SetPaletteColors(screen->format->palette, colors, 0, 256);
-  SDL_SetRenderDrawColor(sdlRenderer, 0, 0, 0, 255);
-  SDL_RenderClear(sdlRenderer);
-  SDL_RenderPresent(sdlRenderer);
-
   FILE* audio = fopen(filename, "rb");
   fseek(audio, 0, SEEK_END);
   audiolength = ftell(audio);
@@ -163,16 +142,27 @@ int main(int argc, char *argv[])
      audiobuff[i] = audioread[i]/2;
   }
 
-//  play();
-
   monitor_modulator_t mm;
   monitor_modulator_params_t mm_params;
   mm_params.resx = resx;
   mm_params.resy = resy;
   mm_params.spanx = horizontalspan;
   mm_params.spany = verticalspan;
+  mm_params.mod_mode = MOD_MODE_BPSK;
+  mm_params.fc = fc;
+  mm_params.fs = pixelclock;
 
   monitor_modulator_init(&mm, mm_params);
+
+    SDL_Event event;
+  for (int i = 0; i < 600; i++)
+  {
+    while(SDL_PollEvent(&event)) 
+       if (event.type == SDL_MOUSEBUTTONDOWN) 
+          exit(0);
+     monitor_modulator_transmit(&mm, i%2);
+     SDL_Delay(250);
+  }
 
   return 0;
 };
