@@ -4,7 +4,7 @@
 #include <util.h>
 #include <mixer.h>
 
-void lut_init(int8_t* cos_lut[], int8_t* sin_lut[], mixer_params mp)
+void mixer_lut_init(int8_t* cos_lut[], int8_t* sin_lut[], mixer_params_t mp)
 {
    cos_lut[0] = malloc(_MIXER_LUT_SIZE * mp.upsample);
    sin_lut[0] = malloc(_MIXER_LUT_SIZE * mp.upsample);
@@ -31,13 +31,13 @@ void lut_init(int8_t* cos_lut[], int8_t* sin_lut[], mixer_params mp)
    }
 }
 
-void mixer_init(mixer* m, mixer_params mp)
+void mixer_init(mixer_t* m, mixer_params_t mp)
 {
    m->params = mp;
-   lut_init(m->cos_lut, m->sin_lut, mp);
+   mixer_lut_init(m->cos_lut, m->sin_lut, mp);
 }
 
-void mixer_mix(mixer* m, int i_samp, int q_samp, int8_t* buffer_out, int* samples_clipped)
+void mixer_mix(mixer_t* m, int i_samp, int q_samp, int8_t* buffer_out, int* samples_clipped)
 {
    int idx_offset = (_MIXER_LUT_SIZE + 0) / 2;
    int flag;

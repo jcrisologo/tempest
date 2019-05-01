@@ -7,19 +7,20 @@
 
 typedef struct
 {
-   unsigned int fc;
-   unsigned int fs;
+   double fc;
+   double fs;
    unsigned int upsample;
-} mixer_params;
+} mixer_params_t;
 
 typedef struct
 {
-   mixer_params params;
+   mixer_params_t params;
    int8_t* sin_lut[_MIXER_LUT_SIZE];
    int8_t* cos_lut[_MIXER_LUT_SIZE];
-} mixer;
+} mixer_t;
 
-void mixer_init(mixer* m, mixer_params mp);
-void mixer_mix(mixer* m, int i_samp, int q_samp, int8_t* buffer_out, int* samples_clipped);
+void mixer_init(mixer_t* m, mixer_params_t mp);
+void mixer_lut_init(int8_t* cos_lut[], int8_t* sin_lut[], mixer_params_t mp);
+void mixer_mix(mixer_t* m, int i_samp, int q_samp, int8_t* buffer_out, int* samples_clipped);
 
 #endif

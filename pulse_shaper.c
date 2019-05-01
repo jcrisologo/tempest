@@ -4,7 +4,7 @@
 #include <util.h>
 #include <pulse_shaper.h>
 
-void pulse_shaper_init(pulse_shaper* shaper, pulse_shaper_params params)
+void pulse_shaper_init(pulse_shaper_t* shaper, pulse_shaper_params_t params)
 {
    unsigned int pulse_len = 2 * params.sps * params.delay;
    float pulse_float[pulse_len + 1];
@@ -25,15 +25,15 @@ void pulse_shaper_init(pulse_shaper* shaper, pulse_shaper_params params)
    }
 }
 
-void pulse_shaper_clean(pulse_shaper* shaper)
+void pulse_shaper_clean(pulse_shaper_t* shaper)
 {
    free(shaper->buffer);
    free(shaper->pulse);
 }
 
-void pulse_shaper_advance(pulse_shaper* shaper, int next_symbol, int8_t* output)
+void pulse_shaper_advance(pulse_shaper_t* shaper, int next_symbol, int8_t* output)
 {
-   pulse_shaper_params p = shaper->params;
+   pulse_shaper_params_t p = shaper->params;
    unsigned int pulse_len = 2 * p.sps * p.delay;
    int output_start = shaper->buffer_pos - p.sps;
    output_start = (output_start + pulse_len) % pulse_len;

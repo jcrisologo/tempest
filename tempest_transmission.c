@@ -7,6 +7,7 @@
 #include <string.h>
 #include <pulse_shaper.h>
 #include <mixer.h>
+#include <monitor_modulator.h>
 
 double fc;
 int resx;
@@ -30,8 +31,8 @@ void play ()
   unsigned int ticksLast = ticksCurr;
   unsigned int missed = 0;
 
-  pulse_shaper ps;
-  pulse_shaper_params ps_params;
+  pulse_shaper_t ps;
+  pulse_shaper_params_t ps_params;
 
   ps_params.sps = verticalspan;
   ps_params.delay = 2;
@@ -39,8 +40,8 @@ void play ()
   ps_params.gain = 84;
   pulse_shaper_init(&ps, ps_params);
 
-  mixer m;
-  mixer_params m_params;
+  mixer_t m;
+  mixer_params_t m_params;
   m_params.fc = fc;
   m_params.fs = pixelclock;
   m_params.upsample = horizontalspan;
@@ -87,7 +88,7 @@ void play ()
        pos %= data_len;
 ticksCurr = SDL_GetTicks();
 if (ticksCurr - ticksLast > 20) missed++;
-//SDL_Delay(300);
+//SDL_Delay(150);
   };
 
 };
@@ -128,8 +129,8 @@ int main(int argc, char *argv[])
 	 "\n\n",
 	 pixelclock,resx,resy,horizontalspan,verticalspan,fc);
 
-  sdlWindow = SDL_CreateWindow("waha", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 0, 0, SDL_WINDOW_FULLSCREEN_DESKTOP);
-  sdlRenderer = SDL_CreateRenderer(sdlWindow, -1, SDL_RENDERER_PRESENTVSYNC);
+//  sdlWindow = SDL_CreateWindow("waha", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 0, 0, SDL_WINDOW_FULLSCREEN_DESKTOP);
+//  sdlRenderer = SDL_CreateRenderer(sdlWindow, -1, SDL_RENDERER_PRESENTVSYNC);
   screen = SDL_CreateRGBSurface(0, resx, resy, 8, 0, 0, 0, 0);
 
   if (screen ==NULL)
@@ -162,7 +163,16 @@ int main(int argc, char *argv[])
      audiobuff[i] = audioread[i]/2;
   }
 
-  play();
+//  play();
+
+  monitor_modulator_t mm;
+  monitor_modulator_params_t mm_params;
+  mm_params.resx = resx;
+  mm_params.resy = resy;
+  mm_params.spanx = horizontalspan;
+  mm_params.spany = verticalspan;
+
+  monitor_modulator_init(&mm, mm_params);
 
   return 0;
 };

@@ -5,8 +5,8 @@
 
 int main()
 {
-   pulse_shaper_params ps_params;
-   pulse_shaper ps;
+   pulse_shaper_params_t ps_params;
+   pulse_shaper_t ps;
    int8_t output[6];
 
    ps_params.sps = 6;

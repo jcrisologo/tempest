@@ -3,8 +3,8 @@
 
 int main()
 {
-   mixer m;
-   mixer_params mp;
+   mixer_t m;
+   mixer_params_t mp;
    int8_t buffer[1024];
    int samples_clipped;
 
