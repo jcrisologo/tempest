@@ -91,24 +91,27 @@ void monitor_modulator_dqpsk_map(int* data, int* samp)
    // todo: kludge
    if (qpsk[0] == 1 && qpsk[1] == 1)
    {
-      last_samp[0] = samp[0] = last_samp[0];
-      last_samp[1] = samp[1] = last_samp[1];
+      samp[0] = last_samp[0];
+      samp[1] = last_samp[1];
    }
    else if (qpsk[0] == -1 && qpsk[1] == 1)
    {
-      last_samp[0] = samp[0] = -last_samp[1];
-      last_samp[1] = samp[1] = last_samp[0];
+      samp[0] = -last_samp[1];
+      samp[1] = last_samp[0];
    }
    else if (qpsk[0] == -1 && qpsk[1] == -1)
    {
-      last_samp[0] = samp[0] = -last_samp[0];
-      last_samp[1] = samp[1] = -last_samp[1];
+      samp[0] = -last_samp[0];
+      samp[1] = -last_samp[1];
    }
    else if (qpsk[0] == 1 && qpsk[1] == -1)
    {
-      last_samp[0] = samp[0] = last_samp[1];
-      last_samp[1] = samp[1] = -last_samp[0];
+      samp[0] = last_samp[1];
+      samp[1] = -last_samp[0];
    }
+
+   last_samp[0] = samp[0];
+   last_samp[1] = samp[1];
 }
 
 void monitor_modulator_bpsk_draw(monitor_modulator_t* mm, int sym)
@@ -182,5 +185,15 @@ void monitor_modulator_transmit(monitor_modulator_t* mm, int data)
             mm->data_buffer_count = 0;
          }
          break;
+   }
+
+   SDL_Delay(200);
+}
+
+void monitor_modulator_transmit_byte(monitor_modulator_t* mm, unsigned char data)
+{
+   for (int i = 0; i < 8; i++)
+   {
+      monitor_modulator_transmit(mm, data & (1<<i));
    }
 }

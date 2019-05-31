@@ -43,6 +43,7 @@ void monitor_modulator_init(
 void monitor_modulator_sdl_init(monitor_modulator_t* mm);
 
 void monitor_modulator_transmit(monitor_modulator_t* mm, int data);
+void monitor_modulator_transmit_byte(monitor_modulator_t* mm, unsigned char data);
 void monitor_modulator_display(monitor_modulator_t* mm);
 
 int monitor_modulator_ook_map(int data);
