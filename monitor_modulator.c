@@ -187,7 +187,7 @@ void monitor_modulator_transmit(monitor_modulator_t* mm, int data)
          break;
    }
 
-   SDL_Delay(200);
+   //SDL_Delay(8);
 }
 
 void monitor_modulator_transmit_byte(monitor_modulator_t* mm, unsigned char data)
