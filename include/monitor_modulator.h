@@ -3,10 +3,12 @@
 
 typedef enum
 {
+   MOD_MODE_ERR,
    MOD_MODE_AM,
    MOD_MODE_OOK,
    MOD_MODE_BPSK,
-   MOD_MODE_QPSK
+   MOD_MODE_QPSK,
+   MOD_MODE_DQPSK
 } mod_mode_t;
 
 typedef struct
@@ -46,6 +48,7 @@ void monitor_modulator_display(monitor_modulator_t* mm);
 int monitor_modulator_ook_map(int data);
 int monitor_modulator_bpsk_map(int data);
 void monitor_modulator_qpsk_map(int* data, int* samp);
+void monitor_modulator_dqpsk_map(int* data, int* samp);
 
 void monitor_modulator_am_draw(monitor_modulator_t* mm, int sym);
 void monitor_modulator_ook_draw(monitor_modulator_t* mm, int sym);

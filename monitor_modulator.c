@@ -78,6 +78,39 @@ void monitor_modulator_qpsk_map(int* data, int* samp)
    else samp[1] = -1;
 }
 
+// DQPSK remaps QPSK constellation points into rotations
+void monitor_modulator_dqpsk_map(int* data, int* samp)
+{
+   // todo: bit lazy, this, but we are outta time
+   static int last_samp[2] = {-1, -1};
+   int qpsk[2];
+
+   monitor_modulator_qpsk_map(data, qpsk);
+
+   // Rotate last_samp based on the QPSK symbol
+   // todo: kludge
+   if (qpsk[0] == 1 && qpsk[1] == 1)
+   {
+      last_samp[0] = samp[0] = last_samp[0];
+      last_samp[1] = samp[1] = last_samp[1];
+   }
+   else if (qpsk[0] == -1 && qpsk[1] == 1)
+   {
+      last_samp[0] = samp[0] = -last_samp[1];
+      last_samp[1] = samp[1] = last_samp[0];
+   }
+   else if (qpsk[0] == -1 && qpsk[1] == -1)
+   {
+      last_samp[0] = samp[0] = -last_samp[0];
+      last_samp[1] = samp[1] = -last_samp[1];
+   }
+   else if (qpsk[0] == 1 && qpsk[1] == -1)
+   {
+      last_samp[0] = samp[0] = last_samp[1];
+      last_samp[1] = samp[1] = -last_samp[0];
+   }
+}
+
 void monitor_modulator_bpsk_draw(monitor_modulator_t* mm, int sym)
 {
    int8_t pulse_buffer[mm->params.spany];
@@ -136,6 +169,15 @@ void monitor_modulator_transmit(monitor_modulator_t* mm, int data)
          if (mm->data_buffer_count == 2)
          {
             monitor_modulator_qpsk_map(mm->data_buffer, qpsk_sym);
+            monitor_modulator_qpsk_draw(mm, qpsk_sym[0], qpsk_sym[1]);
+            mm->data_buffer_count = 0;
+         }
+         break;
+      case MOD_MODE_DQPSK: 
+         mm->data_buffer[mm->data_buffer_count++] = data;
+         if (mm->data_buffer_count == 2)
+         {
+            monitor_modulator_dqpsk_map(mm->data_buffer, qpsk_sym);
             monitor_modulator_qpsk_draw(mm, qpsk_sym[0], qpsk_sym[1]);
             mm->data_buffer_count = 0;
          }
