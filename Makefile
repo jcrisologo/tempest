@@ -7,7 +7,7 @@ LDIR =../lib
 
 LIBS=-lm -lSDL2 -lliquid -lconfig -L/usr/lib/i386-linux-gnu
 
-_OBJ = pulse_shaper.o config_reader.o mixer.o util.o monitor_modulator.o
+_OBJ = pulse_shaper.o mixer.o util.o monitor_modulator.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 TARGETS = tempest_transmission pulse_shaper_test mixer_test
