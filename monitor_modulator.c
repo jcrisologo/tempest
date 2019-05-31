@@ -161,6 +161,7 @@ void monitor_modulator_transmit(monitor_modulator_t* mm, int data)
 
    switch (mm->params.mod_mode)
    {
+      case MOD_MODE_ERR: printf("Bad modulation scheme\n"); break;
       case MOD_MODE_AM: break;
       case MOD_MODE_OOK: break;
       case MOD_MODE_BPSK:
@@ -185,6 +186,7 @@ void monitor_modulator_transmit(monitor_modulator_t* mm, int data)
             mm->data_buffer_count = 0;
          }
          break;
+      default: break;
    }
 
    //SDL_Delay(8);
