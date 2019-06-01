@@ -78,6 +78,20 @@ size_t read_data(const char* data_filename, uint8_t** dst)
    return data_len;
 }
 
+void update_gain(float* gain, SDL_Keysym* key)
+{
+   if (key->sym == SDLK_UP)
+   {
+      *gain += 0.05;
+      if (*gain > 1.0) *gain = 1.0;
+   }
+   else if (key->sym == SDLK_DOWN)
+   {
+      *gain -= 0.05;
+      if (*gain < 0.0) *gain = 0.0;
+   }
+}
+
 void usage(const char* myname)
 {
    printf("usage: %s config_file data_file\n"
@@ -119,6 +133,10 @@ int main(int argc, char *argv[])
             if (event.type == SDL_MOUSEBUTTONDOWN) 
             {
                goto exit;
+            }
+            else if (event.type == SDL_KEYDOWN)
+            {
+               update_gain(&mm.gain, &event.key.keysym);
             }
          }
 

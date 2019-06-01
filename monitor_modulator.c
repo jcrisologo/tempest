@@ -30,6 +30,7 @@ void monitor_modulator_init(
    mixer_params_t mix_params;
 
    mm->params = mod_params;
+   mm->gain = 1.0;
 
    ps_params.sps = mod_params.spany;
    ps_params.delay = 2;
@@ -153,7 +154,7 @@ void monitor_modulator_draw(monitor_modulator_t* mm)
 
 void monitor_modulator_am_draw(monitor_modulator_t* mm, uint8_t samp)
 {
-   mm->col_buffer_i[mm->col_buffer_pos++] = samp / 2;
+   mm->col_buffer_i[mm->col_buffer_pos++] = (samp / 2) * mm->gain;
 
    if (mm->col_buffer_pos < mm->params.spany)
       return;

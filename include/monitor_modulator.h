@@ -32,6 +32,7 @@ typedef struct
    pulse_shaper_t* pulse_shaper_i;
    pulse_shaper_t* pulse_shaper_q;
    mixer_t* mixer;
+   float gain;
    int data_buffer[2]; // buffers i and q samp for QPSK only
    int data_buffer_count;
    int8_t* col_buffer_i;
