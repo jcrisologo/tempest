@@ -40,6 +40,12 @@ void monitor_modulator_init(
    mix_params.fs = mod_params.fs;
    mix_params.upsample = mod_params.spanx;
 
+   mm->col_buffer_pos = 0;
+   mm->col_buffer_i = malloc(mod_params.spany);
+   mm->col_buffer_q = malloc(mod_params.spany);
+   memset(mm->col_buffer_i, 0, mod_params.spany);
+   memset(mm->col_buffer_q, 0, mod_params.spany);
+
    mm->pulse_shaper_i = malloc(sizeof(pulse_shaper_t));
    mm->pulse_shaper_q = malloc(sizeof(pulse_shaper_t));
    mm->mixer = malloc(sizeof(mixer_t));
@@ -64,6 +70,8 @@ void monitor_modulator_destroy(monitor_modulator_t* mm)
    free(mm->pulse_shaper_i);
    free(mm->pulse_shaper_q);
    free(mm->mixer);
+   free(mm->col_buffer_i);
+   free(mm->col_buffer_q);
 }
 
 void monitor_modulator_display(monitor_modulator_t* mm)
@@ -72,6 +80,7 @@ void monitor_modulator_display(monitor_modulator_t* mm)
    SDL_RenderCopy(mm->renderer, mm->texture, NULL, NULL);
    SDL_RenderPresent(mm->renderer);
    SDL_DestroyTexture(mm->texture);
+   //SDL_Delay(8);
 }
 
 int monitor_modulator_bpsk_map(int data)
@@ -134,43 +143,40 @@ void monitor_modulator_dqpsk_map(int* data, int* samp)
    last_samp[1] = samp[1];
 }
 
-void monitor_modulator_bpsk_draw(monitor_modulator_t* mm, int sym)
+void monitor_modulator_draw(monitor_modulator_t* mm)
 {
-   int8_t pulse_buffer[mm->params.spany];
-
-   pulse_shaper_advance(mm->pulse_shaper_i, sym, pulse_buffer);
-   
    for (int i = 0; i < mm->params.resy; i++)
    {
-      mixer_mix(mm->mixer, pulse_buffer[i], 0, &((int8_t*)mm->surface->pixels)[i * mm->params.resx], NULL);
-
-      for (int j = 0; j < mm->params.resx; j++)
-      {
-         ((uint8_t*)mm->surface->pixels)[i * mm->params.resx + j] += 128;
-      }
+      mixer_mix_u(mm->mixer, mm->col_buffer_i[i], mm->col_buffer_q[i], &((uint8_t*)mm->surface->pixels)[i * mm->params.resx], NULL);
    }
+}
 
+void monitor_modulator_am_draw(monitor_modulator_t* mm, uint8_t samp)
+{
+   mm->col_buffer_i[mm->col_buffer_pos++] = samp / 2;
+
+   if (mm->col_buffer_pos < mm->params.spany)
+      return;
+
+   monitor_modulator_draw(mm);
+   monitor_modulator_display(mm);
+   mm->col_buffer_pos = 0;
+}
+
+void monitor_modulator_bpsk_draw(monitor_modulator_t* mm, int sym)
+{
+   pulse_shaper_advance(mm->pulse_shaper_i, sym, mm->col_buffer_i);
+   
+   monitor_modulator_draw(mm);
    monitor_modulator_display(mm);
 }
 
 void monitor_modulator_qpsk_draw(monitor_modulator_t* mm, int isym, int qsym)
 {
-   int8_t pulse_buffer_i[mm->params.spany];
-   int8_t pulse_buffer_q[mm->params.spany];
-
-   pulse_shaper_advance(mm->pulse_shaper_i, isym, pulse_buffer_i);
-   pulse_shaper_advance(mm->pulse_shaper_q, qsym, pulse_buffer_q);
+   pulse_shaper_advance(mm->pulse_shaper_i, isym, mm->col_buffer_i);
+   pulse_shaper_advance(mm->pulse_shaper_q, qsym, mm->col_buffer_q);
    
-   for (int i = 0; i < mm->params.resy; i++)
-   {
-      mixer_mix(mm->mixer, pulse_buffer_i[i], pulse_buffer_q[i], &((int8_t*)mm->surface->pixels)[i * mm->params.resx], NULL);
-
-      for (int j = 0; j < mm->params.resx; j++)
-      {
-         ((uint8_t*)mm->surface->pixels)[i * mm->params.resx + j] += 128;
-      }
-   }
-
+   monitor_modulator_draw(mm);
    monitor_modulator_display(mm);
 }
 
@@ -182,7 +188,9 @@ void monitor_modulator_transmit(monitor_modulator_t* mm, int data)
    switch (mm->params.mod_mode)
    {
       case MOD_MODE_ERR: printf("Bad modulation scheme\n"); break;
-      case MOD_MODE_AM: break;
+      case MOD_MODE_AM: 
+         monitor_modulator_am_draw(mm, data);
+         break;
       case MOD_MODE_OOK: break;
       case MOD_MODE_BPSK:
          sym = monitor_modulator_bpsk_map(data);
@@ -208,14 +216,19 @@ void monitor_modulator_transmit(monitor_modulator_t* mm, int data)
          break;
       default: break;
    }
-
-   SDL_Delay(8);
 }
 
-void monitor_modulator_transmit_byte(monitor_modulator_t* mm, unsigned char data)
+void monitor_modulator_transmit_byte(monitor_modulator_t* mm, uint8_t data)
 {
-   for (int i = 0; i < 8; i++)
+   if (mm->params.mod_mode == MOD_MODE_AM)
    {
-      monitor_modulator_transmit(mm, data & (128>>i));
+      monitor_modulator_transmit(mm, data);
+   }
+   else
+   {
+      for (int i = 0; i < 8; i++)
+      {
+         monitor_modulator_transmit(mm, data & (128>>i));
+      }
    }
 }

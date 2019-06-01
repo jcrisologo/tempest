@@ -55,3 +55,13 @@ void mixer_mix(mixer_t* m, int i_samp, int q_samp, int8_t* buffer_out, int* samp
       if (samples_clipped && flag) (*samples_clipped)++;
    }
 }
+
+void mixer_mix_u(mixer_t* m, int i_samp, int q_samp, uint8_t* buffer_out, int* samples_clipped)
+{
+   mixer_mix(m, i_samp, q_samp, (int8_t*)buffer_out, samples_clipped);
+
+   for (int i = 0; i < m->params.upsample; i++)
+   {
+      buffer_out[i] += 128;
+   }
+}

@@ -34,6 +34,9 @@ typedef struct
    mixer_t* mixer;
    int data_buffer[2]; // buffers i and q samp for QPSK only
    int data_buffer_count;
+   int8_t* col_buffer_i;
+   int8_t* col_buffer_q;
+   int col_buffer_pos;
 } monitor_modulator_t;
 
 void monitor_modulator_init(
@@ -44,7 +47,7 @@ void monitor_modulator_destroy(monitor_modulator_t* mm);
 void monitor_modulator_sdl_init(monitor_modulator_t* mm);
 
 void monitor_modulator_transmit(monitor_modulator_t* mm, int data);
-void monitor_modulator_transmit_byte(monitor_modulator_t* mm, unsigned char data);
+void monitor_modulator_transmit_byte(monitor_modulator_t* mm, uint8_t data);
 void monitor_modulator_display(monitor_modulator_t* mm);
 
 int monitor_modulator_ook_map(int data);
@@ -52,7 +55,7 @@ int monitor_modulator_bpsk_map(int data);
 void monitor_modulator_qpsk_map(int* data, int* samp);
 void monitor_modulator_dqpsk_map(int* data, int* samp);
 
-void monitor_modulator_am_draw(monitor_modulator_t* mm, int sym);
+void monitor_modulator_am_draw(monitor_modulator_t* mm, uint8_t samp);
 void monitor_modulator_ook_draw(monitor_modulator_t* mm, int sym);
 void monitor_modulator_bpsk_draw(monitor_modulator_t* mm, int sym);
 void monitor_modulator_qpsk_draw(monitor_modulator_t* mm, int isym, int qsym);
