@@ -72,42 +72,52 @@ int monitor_modulator_bpsk_map(int data)
 
 void monitor_modulator_qpsk_map(int* data, int* samp)
 {
-   if (data[0]) samp[0] = 1;
-   else samp[0] = -1;
-   if (data[1]) samp[1] = 1;
-   else samp[1] = -1;
+   if (!data[0] && !data[1])
+   {
+      samp[0] = 1;
+      samp[1] = 1;
+   }
+   else if (!data[0] && data[1])
+   {
+      samp[0] = -1;
+      samp[1] = 1;
+   }
+   else if (data[0] && data[1])
+   {
+      samp[0] = -1;
+      samp[1] = -1;
+   }
+   else if (data[0] && !data[1])
+   {
+      samp[0] = 1;
+      samp[1] = -1;
+   }
 }
 
-// DQPSK remaps QPSK constellation points into rotations
 void monitor_modulator_dqpsk_map(int* data, int* samp)
 {
    // todo: bit lazy, this, but we are outta time
-   static int last_samp[2] = {-1, -1};
-   int qpsk[2];
+   static int last_samp[2] = {1, 1};
 
-   monitor_modulator_qpsk_map(data, qpsk);
-
-   // Rotate last_samp based on the QPSK symbol
-   // todo: kludge
-   if (qpsk[0] == 1 && qpsk[1] == 1)
+   if (!data[0] && !data[1])
    {
       samp[0] = last_samp[0];
       samp[1] = last_samp[1];
    }
-   else if (qpsk[0] == -1 && qpsk[1] == 1)
+   else if (!data[0] && data[1])
    {
-      samp[0] = -last_samp[1];
-      samp[1] = last_samp[0];
+      samp[0] = last_samp[1];
+      samp[1] = -last_samp[0];
    }
-   else if (qpsk[0] == -1 && qpsk[1] == -1)
+   else if (data[0] && data[1])
    {
       samp[0] = -last_samp[0];
       samp[1] = -last_samp[1];
    }
-   else if (qpsk[0] == 1 && qpsk[1] == -1)
+   else if (data[0] && !data[1])
    {
-      samp[0] = last_samp[1];
-      samp[1] = -last_samp[0];
+      samp[0] = -last_samp[1];
+      samp[1] = last_samp[0];
    }
 
    last_samp[0] = samp[0];
@@ -196,6 +206,6 @@ void monitor_modulator_transmit_byte(monitor_modulator_t* mm, unsigned char data
 {
    for (int i = 0; i < 8; i++)
    {
-      monitor_modulator_transmit(mm, data & (1<<i));
+      monitor_modulator_transmit(mm, data & (128>>i));
    }
 }
