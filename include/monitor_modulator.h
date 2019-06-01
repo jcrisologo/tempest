@@ -39,6 +39,7 @@ typedef struct
 void monitor_modulator_init(
       monitor_modulator_t* mm, 
       monitor_modulator_params_t params);
+void monitor_modulator_destroy(monitor_modulator_t* mm);
 
 void monitor_modulator_sdl_init(monitor_modulator_t* mm);
 

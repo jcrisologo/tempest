@@ -56,6 +56,16 @@ void monitor_modulator_init(
    }
 }
 
+void monitor_modulator_destroy(monitor_modulator_t* mm)
+{
+   pulse_shaper_destroy(mm->pulse_shaper_i);
+   pulse_shaper_destroy(mm->pulse_shaper_q);
+   mixer_destroy(mm->mixer);
+   free(mm->pulse_shaper_i);
+   free(mm->pulse_shaper_q);
+   free(mm->mixer);
+}
+
 void monitor_modulator_display(monitor_modulator_t* mm)
 {
    mm->texture = SDL_CreateTextureFromSurface(mm->renderer, mm->surface);
@@ -199,7 +209,7 @@ void monitor_modulator_transmit(monitor_modulator_t* mm, int data)
       default: break;
    }
 
-   //SDL_Delay(8);
+   SDL_Delay(8);
 }
 
 void monitor_modulator_transmit_byte(monitor_modulator_t* mm, unsigned char data)

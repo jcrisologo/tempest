@@ -47,22 +47,57 @@ void load_conf(char* filename, monitor_modulator_params_t* params)
    config_destroy(&config);
 }
 
-void usage()
+size_t read_data(const char* data_filename, uint8_t** dst)
 {
-   printf("FUCK\n");
+   FILE* data_fp;
+   size_t data_len;
+   int ret;
+
+   data_fp = fopen(data_filename, "rb");
+
+   if (!data_fp)
+   {
+      printf("Couldn't open file?  Check your spelling!\n");
+      exit(0);
+   }
+   
+   fseek(data_fp, 0, SEEK_END);
+   data_len = ftell(data_fp);
+   fseek(data_fp, 0, SEEK_SET);
+   *dst = malloc(data_len);
+   ret = fread(*dst, data_len, 1, data_fp);
+
+   if (!ret)
+   {
+      printf("Couldn't read\n");
+      exit(0);
+   }
+
+   fclose(data_fp);
+
+   return data_len;
+}
+
+void usage(const char* myname)
+{
+   printf("usage: %s config_file data_file\n"
+          "\tsee the README\n", myname);
 }
 
 int main(int argc, char *argv[])
 {
    char* conf_filename;
    char* data_filename;
-   FILE* data_fp;
-   unsigned char* data_buf;
-   int data_len;
+   uint8_t* data_buf;
+   size_t data_len;
+
+   SDL_Event event;
+   monitor_modulator_t mm;
+   monitor_modulator_params_t mm_params;
 
    if (argc != 3) 
    {
-      usage();
+      usage(argv[0]);
       exit(0);
    }
 
@@ -71,32 +106,10 @@ int main(int argc, char *argv[])
    conf_filename = argv[1];
    data_filename = argv[2]; 
 
-   data_fp = fopen(data_filename, "rb");
-   fseek(data_fp, 0, SEEK_END);
-   data_len = ftell(data_fp);
-   fseek(data_fp, 0, SEEK_SET);
-   data_buf = (uint8_t*)malloc(data_len);
-   fread(data_buf, data_len, 1, data_fp);
-   fclose(data_fp);
-
-   monitor_modulator_t mm;
-   monitor_modulator_params_t mm_params;
+   data_len = read_data(data_filename, &data_buf);
    load_conf(conf_filename, &mm_params);
    monitor_modulator_init(&mm, mm_params);
 
-   // AM modulation needs an extra bit so we reduce dynamic range here
-   // (last-minute kludge)
-   if (mm_params.mod_mode == MOD_MODE_AM)
-   {
-      for (int i = 0; i < data_len; i++)
-      {
-         data_buf[i] = data_buf[i] / 2;
-      }
-   }
-
-
-   SDL_Event event;
-   
    while (1)
    {
       for (int i = 0; i < data_len; i++)
@@ -105,7 +118,7 @@ int main(int argc, char *argv[])
          {
             if (event.type == SDL_MOUSEBUTTONDOWN) 
             {
-               exit(0);
+               goto exit;
             }
          }
 
@@ -113,5 +126,8 @@ int main(int argc, char *argv[])
       }
    }
 
+exit:
+   monitor_modulator_destroy(&mm);
+   free(data_buf);
    return 0;
 }

@@ -20,6 +20,7 @@ typedef struct
 } mixer_t;
 
 void mixer_init(mixer_t* m, mixer_params_t mp);
+void mixer_destroy(mixer_t* m);
 void mixer_lut_init(int8_t* cos_lut[], int8_t* sin_lut[], mixer_params_t mp);
 void mixer_mix(mixer_t* m, int i_samp, int q_samp, int8_t* buffer_out, int* samples_clipped);
 

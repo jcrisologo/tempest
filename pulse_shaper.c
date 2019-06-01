@@ -25,7 +25,7 @@ void pulse_shaper_init(pulse_shaper_t* shaper, pulse_shaper_params_t params)
    }
 }
 
-void pulse_shaper_clean(pulse_shaper_t* shaper)
+void pulse_shaper_destroy(pulse_shaper_t* shaper)
 {
    free(shaper->buffer);
    free(shaper->pulse);

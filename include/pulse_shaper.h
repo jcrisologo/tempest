@@ -20,7 +20,7 @@ typedef struct pulse_shaper
 } pulse_shaper_t;
 
 void pulse_shaper_init(pulse_shaper_t* shaper, pulse_shaper_params_t params);
-void pulse_shaper_clean(pulse_shaper_t* shaper);
+void pulse_shaper_destroy(pulse_shaper_t* shaper);
 
 // Advance will produce sps+1 samples of output with every call
 // This output will not correspond with the current next_symbol,

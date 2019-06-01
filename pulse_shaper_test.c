@@ -64,7 +64,7 @@ int main()
       printf("\n");
    }
 
-   pulse_shaper_clean(&ps);
+   pulse_shaper_destroy(&ps);
 
    return 0;
 }

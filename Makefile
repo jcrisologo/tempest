@@ -13,6 +13,7 @@ OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 TARGETS = tempest_transmission pulse_shaper_test mixer_test
 
 $(ODIR)/%.o: %.c $(DEPS)
+	@mkdir -p $(@D)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 .PHONY: clean all
