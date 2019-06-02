@@ -13,7 +13,7 @@ anything else that naturally comes to mind when thinking about tempests.
 ## About
 
 [TEMPEST](https://en.wikipedia.org/wiki/Tempest_(codename)) is the NSA codeword for a particular class of information-leaking emission
-produced by electronic devices.  Maxwell's equations tell us that a change in current produces a change in magnetic field.  A change in magnetic field induces a change in electric field and vice versa.  Thus we obtain the self-propagating electromagnetic radiation that so much of our modern-day technological communication depends on.  But ALL of our electronic have changing currents, whether we want to propagate radiation or not.  Extra processing power during a cryptographic action will cause it.  Changing a pixel's brightness too.  The emissions gererated by these events can be captured and analyzed.
+produced by electronic devices.  Maxwell's equations tell us that a change in current produces a change in magnetic field.  A change in magnetic field induces a change in electric field and vice versa.  Thus we obtain the self-propagating electromagnetic radiation that so much of our modern-day technological communication depends on.  But ALL of our electronics have changing currents, whether we want to propagate radiation or not.  Extra processing power during a cryptographic action will cause it.  Changing a pixel's brightness too.  The emissions gererated by these events can be captured and analyzed.
 
 First discovered by Bell Labs during World War II, this phenomena is now well understood and well defended against — at least for the devices that the NSA cares about.  Consumer devices tend to not have the same level of protection, thus this project is doable on a budget of breadcrumbs.
 
