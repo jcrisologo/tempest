@@ -148,7 +148,7 @@ void monitor_modulator_draw(monitor_modulator_t* mm)
 {
    for (int i = 0; i < mm->params.resy; i++)
    {
-      mixer_mix_u(mm->mixer, mm->col_buffer_i[i], mm->col_buffer_q[i], &((uint8_t*)mm->surface->pixels)[i * mm->params.resx], NULL);
+      mixer_mix_u(mm->mixer, mm->col_buffer_i[i], mm->col_buffer_q[i], 128 * mm->gain, &((uint8_t*)mm->surface->pixels)[i * mm->params.resx], NULL);
    }
 }
 
