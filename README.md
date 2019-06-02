@@ -33,7 +33,7 @@ This project would have seemed like a hopeless effort were the path not already 
 ## Environment
 Tested only on Lubuntu 18.10
 
-```sudo apt-get install ffmpeg sox libsdl2-dev libliquid-dev libconfig-dev git build-essential```
+```sudo apt-get install alsa-utils ffmpeg sox libsdl2-dev libliquid-dev libconfig-dev git build-essential```
 
 Most development was done using an ASUS VH242 monitor conencted over VGA.  TEMPEST for digital signals will likely require an entirely different strategy to what is done here.  The phenomena was reproduced on an ASUS UX301LA laptop.  A third device, the ASUS eeePC 1005HA did not have the processing power (Intel Atom N280) to meet its own screen's 60 Hz refresh rate.
 
@@ -42,3 +42,17 @@ Most development was done using an ASUS VH242 monitor conencted over VGA.  TEMPE
 
 ## Usage
 ```./tempest_transmission config_file data_file```
+
+There are certain nuances to constructing a config_file for your own setup.  Please see conf/README.md for details.
+
+In digital modulation modes, TEMPEST Transmission does not care about what format your data_file is in.  All it sees is a sequence of bytes that need to go over the air.  In AM mode, the data must specifically be RAW audio, single-channel, unsigned, one sample per byte, sampled at the same rate as your monitor's HSYNC rate.  Instructions for determining your monitor's HSYNC rate are available in conf/README.md.  The handy-dandy `mksong.sh` script is provided here to aid you in converting your MP3s so you can host your own radio station.
+
+```./mksong.sh sample_rate gain input_file output_file```
+
+The gain parameter is provided in case your signal needs a little boost to get over the noise floor.  Setting it to `1.0` means no modifications, increasing past `1.0` will boost your signal but also induce clipping.  The number of samples clipped will be displayed in a printout when `mksong.sh` completes.  Try adjusting it and figure out what's acceptable to you.
+
+Your RAW audio files can be tested by playing directly through your computer's sound subsystem.
+
+```aplay -r sample_rate -c 1 -f u8 raw_file```
+
+`sample_rate` should of course be the value you provided to `mksong.sh`.  `raw_file` should be the `output_file` you gave to `mksong.sh`.
