@@ -17,8 +17,8 @@ produced by electronic devices.  Maxwell's equations tell us that a change in cu
 
 First discovered by Bell Labs during World War II, this phenomena is now well understood and well defended against — at least for the devices that the NSA cares about.  Consumer devices tend to not have the same level of protection, thus this project is doable on a budget of breadcrumbs.
 
-TEMPEST is generally assumed to only be a passive attack by an eavesdropper with no control over the target platform.  TEMPEST Transmission
-explores the idea of turning this into an active attack: what havoc can a malicious actor wreak with direct access to the target?  (Gettng access is an exercise left to the reader.  Insider threats, social engineering, and supply-side attacks against display driver distributors are all viable avenues for attack.)
+Threat models incorporating TEMPEST generally address only a passive attack by an eavesdropper with no control over the target platform.  
+TEMPEST Transmission explores the idea of turning this into an active attack: what havoc can a malicious actor wreak with direct access to the target?  (Gettng access is an exercise left to the reader.  Insider threats, social engineering, and supply-side attacks against display driver distributors are all viable avenues for attack.)
 
 TEMPEST Transmission uses the TEMPEST emissions of a monitor to convey information.  It first demonstrates generation of an AM carrier signal modulated with music.  After showing sufficient control over the TEMPEST signal, it moves on to transmitting OOK, BPSK, QPSK and DQPSK modulated digital data at a rate of one symbol per display frame.  The signal is captured by a USRP and demodulated in Simulink, however consumer radios are perfectly capable of receiving and playing the AM signal.
 
